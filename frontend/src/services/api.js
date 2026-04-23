@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// Point to the deployed backend on Render
 const API_URL = 'https://grievance-backend.onrender.com/api';
 
 // Create an axios instance

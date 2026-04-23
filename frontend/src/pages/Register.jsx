@@ -22,7 +22,13 @@ const Register = () => {
       await register(name, email, password);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      console.error('Registration error details:', err);
+      // Determine exactly what failed
+      if (err.message === 'Network Error') {
+        setError('Network Error: Cannot reach the backend. Please check if your Render backend is live.');
+      } else {
+        setError(err.response?.data?.message || err.message || 'Registration failed');
+      }
     } finally {
       setLoading(false);
     }
