@@ -16,22 +16,23 @@ const registerStudent = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    // 1. Validate Input Fields
     if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Please add all fields' });
+      return res.status(400).json({ message: 'Please add all required fields (name, email, password)' });
     }
 
-    // Check if student exists
+    // 2. Handle Duplicate Email
     const studentExists = await Student.findOne({ email });
 
     if (studentExists) {
-      return res.status(400).json({ message: 'Email already exists' });
+      return res.status(400).json({ message: 'A student with this email already exists' });
     }
 
-    // Hash password
+    // 3. Hash Password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create student
+    // 4. Create Student
     const student = await Student.create({
       name,
       email,
@@ -39,6 +40,7 @@ const registerStudent = async (req, res) => {
     });
 
     if (student) {
+      console.log(`New student registered: ${student.email}`);
       res.status(201).json({
         _id: student.id,
         name: student.name,
@@ -46,10 +48,11 @@ const registerStudent = async (req, res) => {
         token: generateToken(student._id),
       });
     } else {
-      res.status(400).json({ message: 'Invalid student data' });
+      res.status(400).json({ message: 'Invalid student data received' });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Registration Error:', error);
+    res.status(500).json({ message: error.message || 'Internal Server Error during registration' });
   }
 };
 
@@ -60,10 +63,17 @@ const loginStudent = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Validate Input Fields
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Please provide both email and password' });
+    }
+
     // Check for student email
     const student = await Student.findOne({ email });
 
+    // Validate password
     if (student && (await bcrypt.compare(password, student.password))) {
+      console.log(`Student logged in: ${student.email}`);
       res.json({
         _id: student.id,
         name: student.name,
@@ -71,10 +81,11 @@ const loginStudent = async (req, res) => {
         token: generateToken(student._id),
       });
     } else {
-      res.status(401).json({ message: 'Invalid credentials' });
+      res.status(401).json({ message: 'Invalid email or password' });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Login Error:', error);
+    res.status(500).json({ message: error.message || 'Internal Server Error during login' });
   }
 };
 
