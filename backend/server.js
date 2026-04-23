@@ -17,10 +17,8 @@ connectDB();
 const app = express();
 
 // Middleware
-// Enable CORS for frontend requests
 app.use(cors({
-  origin: '*', // In production, replace with frontend URL
-  credentials: true
+  origin: '*' // Allow all origins for the frontend
 }));
 
 app.use(express.json());
